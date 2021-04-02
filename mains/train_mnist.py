@@ -8,6 +8,11 @@ from utils.train import train_models
 from configs.utils import create_model_from_config, create_metric_config, update_config
 from configs.mnist import optimal_lrs
 
+from six.moves import urllib
+opener = urllib.request.build_opener()
+opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+urllib.request.install_opener(opener)
+
 # if you don't wish to create a wandb sweep, you can directly edit the following parameters
 # - model_name: one of ('uniform_sum', 'non_uniform_sum', 'rotation', 'nd', 'nd_exp', 'vae')
 # - optimizer: one of ('SGD', 'Adam')

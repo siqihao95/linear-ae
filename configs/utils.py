@@ -1,13 +1,13 @@
 import torch
 import numpy as np
 import wandb
-import ipdb
 from models.linear_autoencoder import LinearAE
 from models.linear_ae_nested_dropout import LinearAENestedDropout
 from models.linear_vae import LinearVAE
 from models.model_config import ModelTypes, ModelConfig
 from utils.metrics import metric_alignment, metric_transpose_theorem, metric_subspace, metric_loss, metric_recon_loss
-from utils.optimizers import CpRMSprop, MyRMSprop
+from utils.optimizers import MyRMSprop
+from optimizers.rmsprop import CpRMSprop
 
 
 def create_model_from_config(config, input_dim, init_scale=0.0001, reg_min=0.1, reg_max=0.9):
@@ -27,7 +27,7 @@ def create_model_from_config(config, input_dim, init_scale=0.0001, reg_min=0.1, 
         optim_class = MyRMSprop
         extra_optim_args = {'grad_type': config.optimizer}
     else:
-        raise ValueError('config parameter "optimizer" needs to be one of ("Adam", "SGD")')
+        raise ValueError(f'config parameter "optimizer" takes an unexpected value {config.optimizer}')
 
     model_name = config.model_type
 

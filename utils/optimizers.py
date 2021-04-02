@@ -1,5 +1,4 @@
 import torch
-import ipdb
 #import torch.optim._functional as F
 from torch.optim.optimizer import Optimizer
 import math
@@ -89,7 +88,7 @@ class CpRMSprop(Optimizer):
         super(CpRMSprop, self).__init__(params, defaults)
 
     def __setstate__(self, state):
-        super(RMSprop, self).__setstate__(state)
+        super(CpRMSprop, self).__setstate__(state)
         for group in self.param_groups:
             group.setdefault('momentum', 0)
             group.setdefault('centered', False)
@@ -206,10 +205,8 @@ def rmsprop(grad_type: str,
         params[0] -= lr*(gs[0]-gamma @ params[0] / batch_size)
         params[1] -= lr*(gs[1]-params[1] @ gamma.T / batch_size)
     elif grad_type == "RMSprop_rotation_acc":
-        #ipdb.set_trace()
         A = gamma @ params[0] / batch_size #  1/n AW_1
         weight_inverse = torch.pinverse(params[0]) #pseudo-inverse
-        #ipdb.set_trace()
         rotation_square_avg.mul_(alpha).addcmul_(A, A, value=1 - alpha)
         rotation_avg = rotation_square_avg.sqrt().add_(eps) # EMA(1/n AW_1)
         den = torch.div(A, rotation_avg) *  batch_size  #  AW_1 / EMA(1/n AW_1)
@@ -260,7 +257,7 @@ class MyRMSprop(Optimizer):
         self.grad_type = grad_type
 
     def __setstate__(self, state):
-        super(RMSprop, self).__setstate__(state)
+        super(MyRMSprop, self).__setstate__(state)
         for group in self.param_groups:
             group.setdefault('momentum', 0)
             group.setdefault('centered', False)
@@ -298,9 +295,7 @@ class MyRMSprop(Optimizer):
                 # State initialization
                 if len(state) == 0:
                     state['step'] = 0
-                    ipdb.set_trace()
                     state['square_avg'] = torch.zeros_like(p, memory_format=torch.preserve_format)
-                    #ipdb.set_trace()
                     A = gamma @ group['params'][0]
                     state['rotation_square_avg'] = torch.zeros_like(A, memory_format=torch.preserve_format)
                     if group['momentum'] > 0:
