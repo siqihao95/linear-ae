@@ -1,7 +1,12 @@
 name: mnist-sweep
-program: -m mains.train_mnist
-project: linear-ae-neurips
+# program: -m mains.train_mnist
+project: linear-ae-2541
 method: grid
+command:
+  - cd "/h/huang/git_code/lae/linear-ae" ; ${env}
+  - ${interpreter} -m
+  - mains.train_mnist
+  - ${args}
 parameters:
   optimizer:
     distribution: categorical
