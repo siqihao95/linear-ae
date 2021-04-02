@@ -27,9 +27,9 @@ def create_model_from_config(config, input_dim, init_scale=0.0001, reg_min=0.1, 
     # elif config.optimizer == 'RMSprop_grad_acc' or config.optimizer == 'RMSprop_rotation_acc':
     #     optim_class = MyRMSprop
     #     extra_optim_args = {'grad_type': config.optimizer}
-    # elif config.optimizer == "RMSprop_subspace_only":
-    #     optim_class = RMSpropSubspace
-    #     extra_optim_args = {"encoder": None, "decoder": None}
+    elif config.optimizer == "RMSprop_subspace_only":
+        optim_class = RMSpropSubspace
+        extra_optim_args = {}
     else:
         raise ValueError(f'config parameter "optimizer" takes an unexpected value {config.optimizer}')
 
