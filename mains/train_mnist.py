@@ -13,13 +13,16 @@ opener = urllib.request.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
 urllib.request.install_opener(opener)
 
+# os.environ["WANDB_MODE"] = "dryrun"
+
+
 # if you don't wish to create a wandb sweep, you can directly edit the following parameters
 # - model_name: one of ('uniform_sum', 'non_uniform_sum', 'rotation', 'nd', 'nd_exp', 'vae')
 # - optimizer: one of ('SGD', 'Adam')
 default_hparams = dict(
     hdim=20,
     model_name="rotation",
-    optimizer="Cp_RMSprop",
+    optimizer="RMSprop_naive",
     train_itr=30000,
     seed=1234
 )

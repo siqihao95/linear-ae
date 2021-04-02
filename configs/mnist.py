@@ -18,8 +18,8 @@ optimal_lrs = {
         "SGD": {20: 0.003},
         "Adam": {20: 0.001},
         "RMSprop": {20: 0.001},
-        "Cp_RMSprop": {20: 0.001},
-        "RMSprop_grad_acc": {20: 0.001},
+        "RMSprop_naive": {20: 0.001},
+        "RMSprop_subspace_only": {20: 0.001},
         "RMSprop_rotation_acc": {20: 0.001}
     },
     ModelTypes.UNIFORM_SUM: {
