@@ -20,7 +20,7 @@ default_hparams = dict(
     seed=1234
 )
 
-wandb.init(project='linear-ae-neurips', config=default_hparams)
+wandb.init(project='linear-ae-NNTD', config=default_hparams)
 
 config = update_config(optimal_lrs)
 

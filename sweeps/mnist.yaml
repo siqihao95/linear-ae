@@ -1,6 +1,6 @@
 name: mnist-sweep
 program: mains/train_mnist.py
-project: linear-ae-neurips
+project: linear-ae-NNTD
 method: grid
 parameters:
   optimizer:

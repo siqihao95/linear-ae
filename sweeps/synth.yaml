@@ -1,6 +1,6 @@
 name: synth-sweep
 program: mains/train_synth.py
-project: linear-ae-neurips
+project: linear-ae-NNTDs
 method: grid
 parameters:
   hdim:
