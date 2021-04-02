@@ -1,5 +1,5 @@
 name: mnist-sweep
-program: mains/train_mnist.py
+program: -m mains.train_mnist
 project: linear-ae-neurips
 method: grid
 parameters:
