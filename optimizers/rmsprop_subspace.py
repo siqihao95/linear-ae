@@ -77,7 +77,7 @@ class RMSpropSubspace(Optimizer):
         assert len(params) == 2
 
         # additional encoder and decoder grads
-        add_grads = [- self.gamma @ params[0], params[1] @ self.gamma.T]
+        add_grads = [- self.gamma @ params[0], - params[1] @ self.gamma.T]
 
         for p_i, p in enumerate(params):
             if p.grad is None:
