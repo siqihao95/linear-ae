@@ -20,7 +20,7 @@ optimal_lrs = {
         "RMSprop": {20: 0.001},
         "RMSprop_naive": {20: 0.001},
         "RMSprop_subspace_only": {20: 0.001},
-        "RMSprop_rotation_acc": {20: 0.001}
+        "RMSprop_full": {20: 0.001}
     },
     ModelTypes.UNIFORM_SUM: {
         "SGD": {20: 0.001},

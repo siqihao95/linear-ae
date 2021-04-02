@@ -6,9 +6,9 @@ from models.linear_ae_nested_dropout import LinearAENestedDropout
 from models.linear_vae import LinearVAE
 from models.model_config import ModelTypes, ModelConfig
 from utils.metrics import metric_alignment, metric_transpose_theorem, metric_subspace, metric_loss, metric_recon_loss
-from utils.optimizers import MyRMSprop
 from optimizers.rmsprop_naive import RMSpropNaive
 from optimizers.rmsprop_subspace import RMSpropSubspace
+from optimizers.rmsprop_full_rotation import RMSpropFullRotation
 
 
 def create_model_from_config(config, input_dim, init_scale=0.0001, reg_min=0.1, reg_max=0.9):
@@ -24,12 +24,12 @@ def create_model_from_config(config, input_dim, init_scale=0.0001, reg_min=0.1, 
     elif config.optimizer == 'RMSprop_naive':
         optim_class = RMSpropNaive
         extra_optim_args = {}
-    # elif config.optimizer == 'RMSprop_grad_acc' or config.optimizer == 'RMSprop_rotation_acc':
-    #     optim_class = MyRMSprop
-    #     extra_optim_args = {'grad_type': config.optimizer}
     elif config.optimizer == "RMSprop_subspace_only":
         optim_class = RMSpropSubspace
         extra_optim_args = {}
+    elif config.optimizer == "RMSprop_full":
+        optim_class = RMSpropFullRotation
+        extra_optim_args = {"rotation_alpha": 0.99}
     else:
         raise ValueError(f'config parameter "optimizer" takes an unexpected value {config.optimizer}')
 
