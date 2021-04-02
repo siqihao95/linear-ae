@@ -1,5 +1,5 @@
 #!/bin/bash
 
-#export PYTHONPATH=<PATH_TO_ROOT_DIRECTORY>
-#wandb login <YOUR_WANDB_API_KEY>
-#wandb agent <USERNAME>/linear-ae-neurips/<SWEEP_ID>
+export PYTHONPATH="~/git_code/lae/linear-ae"
+wandb login f75b0173d54548337e4ca0962a4411d3e5292598
+wandb agent sheldonhuang/linear-ae-neurips/nz9xxmiw
