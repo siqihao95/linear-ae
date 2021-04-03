@@ -26,7 +26,7 @@ def create_model_from_config(config, input_dim, init_scale=0.0001, reg_min=0.1, 
         extra_optim_args = {}
     elif config.optimizer == "RMSprop_subspace_only":
         optim_class = RMSpropSubspace
-        extra_optim_args = {}
+        extra_optim_args = {"rotation_momentum": config.rotation_momentum}
     elif config.optimizer == "RMSprop_full":
         optim_class = RMSpropFullRotation
         extra_optim_args = {"rotation_alpha": 0.99}

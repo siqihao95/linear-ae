@@ -22,8 +22,10 @@ urllib.request.install_opener(opener)
 default_hparams = dict(
     hdim=20,
     model_name="rotation",
-    # optimizer="RMSprop_subspace_only",
-    optimizer="RMSprop_full",
+    optimizer="RMSprop_subspace_only",
+    # optimizer="RMSprop_full",
+    # optimizer="SGD",
+    rotation_momentum=0.9,
     train_itr=30000,
     seed=1234
 )

@@ -31,7 +31,7 @@ class RMSpropSubspace(Optimizer):
 
     """
 
-    def __init__(self, params, lr=1e-2, alpha=0.99, eps=1e-8, weight_decay=0, momentum=0, centered=False):
+    def __init__(self, params, rotation_momentum=0.0, lr=1e-2, alpha=0.99, eps=1e-8, weight_decay=0, momentum=0, centered=False):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -46,7 +46,10 @@ class RMSpropSubspace(Optimizer):
         defaults = dict(lr=lr, momentum=momentum, alpha=alpha, eps=eps, centered=centered, weight_decay=weight_decay)
         super(RMSpropSubspace, self).__init__(params, defaults)
 
+        self.rotation_momentum = rotation_momentum
         self.gamma = None
+        self.rotation_state = dict()
+        # TODO: make rotation_state part of self.state to support save and load
 
     def __setstate__(self, state):
         super(RMSpropSubspace, self).__setstate__(state)
@@ -55,7 +58,7 @@ class RMSpropSubspace(Optimizer):
             group.setdefault('centered', False)
 
     def record_current_rotation(self, gamma):
-        self.gamma = gamma
+        self.gamma = gamma.detach()
 
     def step(self, closure=None):
         """Performs a single optimization step.
@@ -76,8 +79,15 @@ class RMSpropSubspace(Optimizer):
         # 2 parameter tensors (encoder and decoder)
         assert len(params) == 2
 
+        # rotation state initialization
+        if len(self.rotation_state) == 0:
+            self.rotation_state['momentum_buffer'] = torch.zeros_like(self.gamma).detach()
+
+        gamma_buf = self.rotation_state['momentum_buffer']
+        gamma_buf.mul_(self.rotation_momentum).add_(self.gamma)
+
         # additional encoder and decoder grads
-        add_grads = [- self.gamma @ params[0], - params[1] @ self.gamma.T]
+        add_grads = [- gamma_buf @ params[0], - params[1] @ gamma_buf.T]
 
         for p_i, p in enumerate(params):
             if p.grad is None:
