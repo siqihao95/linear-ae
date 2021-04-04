@@ -31,7 +31,7 @@ default_hparams = dict(
 
 wandb.init(project='linear-ae-NNTD', config=default_hparams)
 
-config = update_config(optimal_lrs)
+# config = update_config(optimal_lrs)
 
 # set random seed
 np.random.seed(config.seed)
