@@ -11,7 +11,11 @@ from optimizers.rmsprop_subspace import RMSpropSubspace
 from optimizers.rmsprop_full_rotation import RMSpropFullRotation
 
 
-def create_model_from_config(config, input_dim, init_scale=0.0001, reg_min=0.1, reg_max=0.9):
+def create_model_from_config(config,
+                             input_dim,
+                             init_scale=0.0001,
+                             reg_min=0.1,
+                             reg_max=0.9):
     if config.optimizer == 'Adam':
         optim_class = torch.optim.Adam
         extra_optim_args = {}
@@ -26,12 +30,17 @@ def create_model_from_config(config, input_dim, init_scale=0.0001, reg_min=0.1, 
         extra_optim_args = {}
     elif config.optimizer == "RMSprop_subspace_only":
         optim_class = RMSpropSubspace
-        extra_optim_args = {"rotation_momentum": config.rotation_momentum}
+        extra_optim_args = {
+            "rotation_momentum": config.rotation_momentum,
+            "lr": config.lr
+        }
     elif config.optimizer == "RMSprop_full":
         optim_class = RMSpropFullRotation
-        extra_optim_args = {"rotation_alpha": 0.99}
+        extra_optim_args = {"rotation_alpha": 0.99, "lr": config.lr}
     else:
-        raise ValueError(f'config parameter "optimizer" takes an unexpected value {config.optimizer}')
+        raise ValueError(
+            f'config parameter "optimizer" takes an unexpected value {config.optimizer}'
+        )
 
     model_name = config.model_type
 
@@ -39,12 +48,18 @@ def create_model_from_config(config, input_dim, init_scale=0.0001, reg_min=0.1, 
     if config.model_type == ModelTypes.UNIFORM_SUM:
         model_class = LinearAE
         reg_list = list(np.linspace(reg_min, reg_max, num=config.hdim))
-        extra_model_args = {"weight_reg_type": "uniform_sum", "l2_reg_list": [np.mean(reg_list)] * config.hdim}
+        extra_model_args = {
+            "weight_reg_type": "uniform_sum",
+            "l2_reg_list": [np.mean(reg_list)] * config.hdim
+        }
 
     elif config.model_type == ModelTypes.NON_UNIFORM_SUM:
         model_class = LinearAE
         reg_list = list(np.linspace(reg_min, reg_max, num=config.hdim))
-        extra_model_args = {"weight_reg_type": "non_uniform_sum", "l2_reg_list": reg_list}
+        extra_model_args = {
+            "weight_reg_type": "non_uniform_sum",
+            "l2_reg_list": reg_list
+        }
 
     # rotation
     elif config.model_type == ModelTypes.ROTATION:
@@ -67,13 +82,16 @@ def create_model_from_config(config, input_dim, init_scale=0.0001, reg_min=0.1, 
     else:
         raise ValueError('invalid config parameter "model_type"')
 
-    model_config = ModelConfig(
-        model_name, model_type=config.model_type,
-        model_class=model_class, input_dim=input_dim, hidden_dim=config.hdim, init_scale=init_scale,
-        extra_model_args=extra_model_args,
-        optim_class=optim_class, lr=config.lr,
-        extra_optim_args=extra_optim_args
-    )
+    model_config = ModelConfig(model_name,
+                               model_type=config.model_type,
+                               model_class=model_class,
+                               input_dim=input_dim,
+                               hidden_dim=config.hdim,
+                               init_scale=init_scale,
+                               extra_model_args=extra_model_args,
+                               optim_class=optim_class,
+                               lr=config.lr,
+                               extra_optim_args=extra_optim_args)
     return model_config
 
 
@@ -126,7 +144,12 @@ def update_config(optimal_lrs):
     else:
         model_type = wandb.config.model_name
         nd_expectation = None
-    lr = optimal_lrs[wandb.config.model_name][wandb.config.optimizer][wandb.config.hdim]
+    lr = optimal_lrs[wandb.config.model_name][wandb.config.optimizer][
+        wandb.config.hdim]
 
-    wandb.config.update({'model_type': model_type, 'nd_expectation': nd_expectation, 'lr': lr})
+    wandb.config.update({
+        'model_type': model_type,
+        'nd_expectation': nd_expectation,
+        'lr': lr
+    })
     return wandb.config
