@@ -31,12 +31,13 @@ def create_model_from_config(config,
     elif config.optimizer == "RMSprop_subspace_only":
         optim_class = RMSpropSubspace
         extra_optim_args = {
-            "rotation_momentum": config.rotation_momentum,
-            "lr": config.lr
+            "rotation_momentum": config.rotation_momentum
+            # "lr": config.lr
         }
     elif config.optimizer == "RMSprop_full":
         optim_class = RMSpropFullRotation
-        extra_optim_args = {"rotation_alpha": 0.99, "lr": config.lr}
+        extra_optim_args = {"rotation_alpha": 0.99}
+        # extra_optim_args = {"rotation_alpha": 0.99, "lr": config.lr}
     else:
         raise ValueError(
             f'config parameter "optimizer" takes an unexpected value {config.optimizer}'
