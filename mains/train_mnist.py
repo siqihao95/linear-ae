@@ -31,8 +31,8 @@ default_hparams = dict(
 
 wandb.init(project='linear-ae-NNTD', config=default_hparams)
 
-# config = update_config(optimal_lrs)
-config = wandb.config
+config = update_config(optimal_lrs)
+# config = wandb.config
 # set random seed
 np.random.seed(config.seed)
 torch.manual_seed(config.seed)
