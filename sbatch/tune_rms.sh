@@ -7,7 +7,7 @@
 #SBATCH --array=0-49%50
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
-dir_path='/h/huang/git_code/lae/linear-ae/sweep'
+dir_path='/h/huang/git_code/lae/linear-ae/sweeps'
 list=(
 "cd ${dir_path} ; bash sweep.sh"
 "cd ${dir_path} ; bash sweep.sh"
