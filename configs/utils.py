@@ -133,6 +133,28 @@ def create_metric_config(data, data_loader):
     return metric_config, eval_metrics_list
 
 
+# def update_config(optimal_lrs):
+#     # update wandb config, and return updated config dictionary
+#     if wandb.config.model_name == 'nd_exp':
+#         model_type = ModelTypes.NESTED_DROPOUT
+#         nd_expectation = 'true'
+#     elif wandb.config.model_name == 'nd':
+#         model_type = ModelTypes.NESTED_DROPOUT
+#         nd_expectation = 'false'
+#     else:
+#         model_type = wandb.config.model_name
+#         nd_expectation = None
+#     lr = optimal_lrs[wandb.config.model_name][wandb.config.optimizer][
+#         wandb.config.hdim]
+
+#     wandb.config.update({
+#         'model_type': model_type,
+#         'nd_expectation': nd_expectation,
+#         'lr': lr
+#     })
+#     return wandb.config
+
+
 def update_config(optimal_lrs):
     # update wandb config, and return updated config dictionary
     if wandb.config.model_name == 'nd_exp':
@@ -144,12 +166,12 @@ def update_config(optimal_lrs):
     else:
         model_type = wandb.config.model_name
         nd_expectation = None
-    lr = optimal_lrs[wandb.config.model_name][wandb.config.optimizer][
-        wandb.config.hdim]
+    # lr = optimal_lrs[wandb.config.model_name][wandb.config.optimizer][
+    #     wandb.config.hdim]
 
     wandb.config.update({
         'model_type': model_type,
         'nd_expectation': nd_expectation,
-        'lr': lr
+        # 'lr': lr
     })
     return wandb.config
