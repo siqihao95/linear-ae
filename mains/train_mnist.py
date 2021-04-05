@@ -52,8 +52,8 @@ mnist_data = torchvision.datasets.MNIST(
     transform=torchvision.transforms.Compose(
         [torchvision.transforms.ToTensor()]))
 # full batch
-batch_size = 1000
-# batch_size = len(mnist_data)
+# batch_size = 1000
+batch_size = len(mnist_data)
 
 mnist_loader = torch.utils.data.DataLoader(mnist_data,
                                            batch_size=batch_size,
