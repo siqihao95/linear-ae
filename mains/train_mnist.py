@@ -25,6 +25,7 @@ default_hparams = dict(
     # optimizer="RMSprop_subspace_only",
     # optimizer="RMSprop_rotation_only",
     optimizer="RMSprop_full",
+    rmsprop_alpha=0.99,
     # optimizer="SGD",
     subspace_eps=1e-8,
     rotation_eps=1e-8,
