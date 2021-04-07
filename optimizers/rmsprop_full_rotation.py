@@ -49,6 +49,7 @@ class RMSpropFullRotation(Optimizer):
 
         self.rotation_alpha = rotation_alpha
         self.rotation_eps = rotation_eps
+        # self.rotation_momentum = rotation_momentum
 
         self.gamma = None
         self.rotation_state = dict()
@@ -85,18 +86,57 @@ class RMSpropFullRotation(Optimizer):
         # rotation state initialization
         if len(self.rotation_state) == 0:
             self.rotation_state['square_avg'] = torch.zeros_like(params[0].data).detach()
+            self.rotation_state['momentum_buffer'] = torch.zeros_like(params[0].data).detach()
+            self.rotation_state['diag_square_avg_r'] = torch.zeros((params[0].shape[0],)).detach().cuda()
 
         # compute RMSprop for rotation
-        rotation_grad = self.gamma @ params[0].detach()      # A W1
-        rotation_square_avg = self.rotation_state['square_avg']
-        rotation_square_avg.mul_(self.rotation_alpha).addcmul_(1 - self.rotation_alpha, rotation_grad, rotation_grad)
-        rotation_avg = rotation_square_avg.sqrt().add_(self.rotation_eps)
-        rotation_grad.div_(rotation_avg)
-        rotation_projection = rotation_grad @ torch.pinverse(params[0]).detach()
-        rotation_projection_skew = 0.5 * (rotation_projection - rotation_projection.T)   # take skew-symmetric part
+        rotation_grad = self.gamma @ params[0].detach()  # A W1
 
-        # additional encoder and decoder grads
-        add_grads = [- rotation_projection_skew @ params[0].detach(), - params[1].detach() @ rotation_projection_skew.T]
+        row_space_adapt = True
+        amsgrad = False
+        if row_space_adapt:
+            diag_rotation_square_avg_r = self.rotation_state['diag_square_avg_r']
+
+            # column space cov (row space of AW)
+            rotation_sq = rotation_grad @ rotation_grad.T / float(params[0].shape[1])
+
+            # EMA on diag covariance
+            diag_rotation_square_avg_r.mul_(self.rotation_alpha).add_(1 - self.rotation_alpha, torch.diag(rotation_sq))
+
+            if amsgrad:     # add max to ensure convergence
+                diag_rotation_square_avg_r_copy = diag_rotation_square_avg_r.clone()
+                max_diag_r = torch.max(diag_rotation_square_avg_r, diag_rotation_square_avg_r_copy)
+                rotation_grad = torch.diag(torch.pow(max_diag_r, - 0.5)) @ rotation_grad
+            else:
+                rotation_grad = torch.diag(torch.pow(diag_rotation_square_avg_r, - 0.5)) @ rotation_grad
+
+        else:  # element-wise adaptation (naive)
+            rotation_square_avg = self.rotation_state['square_avg']
+
+            canonical_inner_prod = False
+            if canonical_inner_prod:
+                raise NotImplementedError
+            else:
+                rotation_sq = torch.mul(rotation_grad, rotation_grad)
+
+            rotation_square_avg.mul_(self.rotation_alpha).add_(1 - self.rotation_alpha, rotation_sq)
+            rotation_avg = rotation_square_avg.sqrt().add_(self.rotation_eps)
+            rotation_grad.div_(rotation_avg)
+
+        # # momentum  # TODO: add transport
+        # rotation_grad_buf = self.rotation_state['momentum_buffer']
+        # rotation_grad_buf.mul_(self.rotation_momentum).add_(rotation_grad)
+        # rotation_grad = rotation_grad_buf
+
+        # ==== project to tangent space ====
+        # ---- Stiefel manifold projection to tangent space ----
+        # sym_z_wt = rotation_grad @ torch.pinverse(params[0]).detach()
+        sym_z_wt = rotation_grad @ params[0].T.detach()
+        sym_z_wt = 0.5 * (sym_z_wt + sym_z_wt.T)
+        sym_w2_z = sym_z_wt
+        add_grads = [- rotation_grad + sym_z_wt @ params[0].detach(), - rotation_grad.T + params[1].detach() @ sym_w2_z]
+        # -------------------------
+        # =========================
 
         for p_i, p in enumerate(params):
             if p.grad is None:
@@ -139,7 +179,7 @@ class RMSpropFullRotation(Optimizer):
             else:
                 p.data.addcdiv_(-group['lr'], grad, avg)
 
-            # do the rotation without RMSprop
+            # Update rotation
             p.data.add_(-group['lr'], add_grads[p_i])
 
         return loss

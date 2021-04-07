@@ -130,7 +130,7 @@ class RMSpropSubspace(Optimizer):
             else:
                 p.data.addcdiv_(-group['lr'], grad, avg)
 
-            # do the rotation without RMSprop
+            # Update rotation
             p.data.add_(-group['lr'], add_grads[p_i])
 
         return loss
