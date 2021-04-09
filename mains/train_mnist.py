@@ -31,8 +31,7 @@ default_hparams = dict(
     train_itr=30000,
     seed=1234,
     batch_size=1000,
-    tie_weights=True
-)
+    tie_weights=True)
 
 wandb.init(project='linear-ae-NNTD', config=default_hparams)
 
@@ -95,10 +94,12 @@ model_config = create_model_from_config(config,
 # define metrics
 metric_config, eval_metrics_list = create_metric_config(data, data_loader)
 
-train_stats_hdim, _ = train_models(
-    data_loader, train_itr, metric_config,
-    model_configs=[model_config], eval_metrics_list=eval_metrics_list,
-    ckpt_dir=ckpt_dir, tie_weights=config.tie_weights
-)
+train_stats_hdim, _ = train_models(data_loader,
+                                   train_itr,
+                                   metric_config,
+                                   model_configs=[model_config],
+                                   eval_metrics_list=eval_metrics_list,
+                                   ckpt_dir=ckpt_dir,
+                                   tie_weights=config.tie_weights)
 
 train_stats_hdim.close()
