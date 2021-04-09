@@ -9,14 +9,14 @@ def train_models(data_loader, train_itr, metrics_dict, model_configs,
                  eval_metrics_list=None, tie_weights=False, logger=None, ckpt_dir=None):
     first_model = model_configs[0].get_model()
     if tie_weights:
-        first_model.decoder.weight.data.copy_(first_model.encoder.weight.data.T)
+        first_model.decoder.weight.data = first_model.encoder.weight.data.T
 
     for model_i in range(1, len(model_configs)):
         cur_model = model_configs[model_i].get_model()
         cur_model.encoder.weight.data.copy_(first_model.encoder.weight.data)
 
         if tie_weights:
-            cur_model.decoder.weight.data.copy_(cur_model.encoder.weight.data.T)
+            cur_model.decoder.weight.data = cur_model.encoder.weight.data.T
         else:
             cur_model.decoder.weight.data.copy_(first_model.decoder.weight.data)
 

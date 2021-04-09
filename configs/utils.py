@@ -8,6 +8,7 @@ from models.model_config import ModelTypes, ModelConfig
 from utils.metrics import metric_alignment, metric_transpose_theorem, metric_subspace, metric_loss, metric_recon_loss
 from optimizers.rmsprop_naive import RMSpropNaive
 from optimizers.rmsprop_subspace import RMSpropSubspace
+from optimizers.rmsprop_rotation_only import RMSpropRotation
 from optimizers.rmsprop_full_rotation import RMSpropFullRotation
 
 
@@ -30,14 +31,15 @@ def create_model_from_config(config,
         extra_optim_args = {}
     elif config.optimizer == "RMSprop_subspace_only":
         optim_class = RMSpropSubspace
-        extra_optim_args = {
-            "rotation_momentum": config.rotation_momentum
-            # "lr": config.lr
-        }
+        extra_optim_args = {"rotation_momentum": config.rotation_momentum, "eps": config.subspace_eps}
+    elif config.optimizer == "RMSprop_rotation_only":
+        optim_class = RMSpropRotation
+        extra_optim_args = {"rotation_alpha": config.rmsprop_alpha,
+                            "rotation_eps": config.rotation_eps, 'nesterov': False}
     elif config.optimizer == "RMSprop_full":
         optim_class = RMSpropFullRotation
-        extra_optim_args = {"rotation_alpha": 0.99}
-        # extra_optim_args = {"rotation_alpha": 0.99, "lr": config.lr}
+        extra_optim_args = {"rotation_alpha": config.rmsprop_alpha,
+                            "rotation_eps": config.rotation_eps, "eps": config.subspace_eps}
     else:
         raise ValueError(
             f'config parameter "optimizer" takes an unexpected value {config.optimizer}'

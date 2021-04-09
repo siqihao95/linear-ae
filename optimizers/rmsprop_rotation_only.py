@@ -2,50 +2,67 @@ import torch
 from torch.optim.optimizer import Optimizer
 
 
-class RMSpropFullRotation(Optimizer):
-    r"""Implements RMSprop algorithm.
+class RMSpropRotation(Optimizer):
+    r"""Implements stochastic gradient descent (optionally with momentum).
 
-    Proposed by G. Hinton in his
-    `course <http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf>`_.
+    Nesterov momentum is based on the formula from
+    `On the importance of initialization and momentum in deep learning`__.
 
-    The centered version first appears in `Generating Sequences
-    With Recurrent Neural Networks <https://arxiv.org/pdf/1308.0850v5.pdf>`_.
-
-    The implementation here takes the square root of the gradient average before
-    adding epsilon (note that TensorFlow interchanges these two operations). The effective
-    learning rate is thus :math:`\alpha/(\sqrt{v} + \epsilon)` where :math:`\alpha`
-    is the scheduled learning rate and :math:`v` is the weighted moving average
-    of the squared gradient.
-
-    Arguments:
+    Args:
         params (iterable): iterable of parameters to optimize or dicts defining
             parameter groups
-        lr (float, optional): learning rate (default: 1e-2)
+        lr (float): learning rate
         momentum (float, optional): momentum factor (default: 0)
-        alpha (float, optional): smoothing constant (default: 0.99)
-        eps (float, optional): term added to the denominator to improve
-            numerical stability (default: 1e-8)
-        centered (bool, optional) : if ``True``, compute the centered RMSProp,
-            the gradient is normalized by an estimation of its variance
         weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
+        dampening (float, optional): dampening for momentum (default: 0)
+        nesterov (bool, optional): enables Nesterov momentum (default: False)
 
+    Example:
+        >>> optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
+        >>> optimizer.zero_grad()
+        >>> loss_fn(model(input), target).backward()
+        >>> optimizer.step()
+
+    __ http://www.cs.toronto.edu/%7Ehinton/absps/momentum.pdf
+
+    .. note::
+        The implementation of SGD with Momentum/Nesterov subtly differs from
+        Sutskever et. al. and implementations in some other frameworks.
+
+        Considering the specific case of Momentum, the update can be written as
+
+        .. math::
+                  v_{t+1} = \mu * v_{t} + g_{t+1} \\
+                  p_{t+1} = p_{t} - lr * v_{t+1}
+
+        where p, g, v and :math:`\mu` denote the parameters, gradient,
+        velocity, and momentum respectively.
+
+        This is in contrast to Sutskever et. al. and
+        other frameworks which employ an update of the form
+
+        .. math::
+             v_{t+1} = \mu * v_{t} + lr * g_{t+1} \\
+             p_{t+1} = p_{t} - v_{t+1}
+
+        The Nesterov version is analogously modified.
     """
 
     def __init__(self, params, rotation_alpha=0.99, rotation_eps=1e-8,
-                 lr=1e-2, alpha=0.99, eps=1e-8, weight_decay=0, momentum=0, centered=False):
-        if not 0.0 <= lr:
+                 lr=1e-2, momentum=0, dampening=0,
+                 weight_decay=0, nesterov=False):
+        if lr < 0.0:
             raise ValueError("Invalid learning rate: {}".format(lr))
-        if not 0.0 <= eps:
-            raise ValueError("Invalid epsilon value: {}".format(eps))
-        if not 0.0 <= momentum:
+        if momentum < 0.0:
             raise ValueError("Invalid momentum value: {}".format(momentum))
-        if not 0.0 <= weight_decay:
+        if weight_decay < 0.0:
             raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
-        if not 0.0 <= alpha:
-            raise ValueError("Invalid alpha value: {}".format(alpha))
 
-        defaults = dict(lr=lr, momentum=momentum, alpha=alpha, eps=eps, centered=centered, weight_decay=weight_decay)
-        super(RMSpropFullRotation, self).__init__(params, defaults)
+        defaults = dict(lr=lr, momentum=momentum, dampening=dampening,
+                        weight_decay=weight_decay, nesterov=nesterov)
+        if nesterov and (momentum <= 0 or dampening != 0):
+            raise ValueError("Nesterov momentum requires a momentum and zero dampening")
+        super(RMSpropRotation, self).__init__(params, defaults)
 
         self.rotation_alpha = rotation_alpha
         self.rotation_eps = rotation_eps
@@ -56,10 +73,9 @@ class RMSpropFullRotation(Optimizer):
         # TODO: make rotation_state part of self.state to support save and load
 
     def __setstate__(self, state):
-        super(RMSpropFullRotation, self).__setstate__(state)
+        super(RMSpropRotation, self).__setstate__(state)
         for group in self.param_groups:
-            group.setdefault('momentum', 0)
-            group.setdefault('centered', False)
+            group.setdefault('nesterov', False)
 
     def record_current_rotation(self, gamma):
         self.gamma = gamma.detach()
@@ -103,7 +119,7 @@ class RMSpropFullRotation(Optimizer):
             # EMA on diag covariance
             diag_rotation_square_avg_r.mul_(self.rotation_alpha).add_(1 - self.rotation_alpha, torch.diag(rotation_sq))
 
-            if amsgrad:     # add max to ensure convergence
+            if amsgrad:  # add max to ensure convergence
                 diag_rotation_square_avg_r_copy = diag_rotation_square_avg_r.clone()
                 max_diag_r = torch.max(diag_rotation_square_avg_r, diag_rotation_square_avg_r_copy)
                 rotation_grad = torch.diag(torch.pow(max_diag_r, - 0.5)) @ rotation_grad
@@ -138,46 +154,30 @@ class RMSpropFullRotation(Optimizer):
         # -------------------------
         # =========================
 
+        weight_decay = group['weight_decay']
+        momentum = group['momentum']
+        dampening = group['dampening']
+        nesterov = group['nesterov']
+
         for p_i, p in enumerate(params):
             if p.grad is None:
                 continue
-            grad = p.grad.data
-            if grad.is_sparse:
-                raise RuntimeError('RMSprop does not support sparse gradients')
-            state = self.state[p]
+            d_p = p.grad.data
+            if weight_decay != 0:
+                d_p.add_(weight_decay, p.data)
+            if momentum != 0:
+                param_state = self.state[p]
+                if 'momentum_buffer' not in param_state:
+                    buf = param_state['momentum_buffer'] = torch.clone(d_p).detach()
+                else:
+                    buf = param_state['momentum_buffer']
+                    buf.mul_(momentum).add_(1 - dampening, d_p)
+                if nesterov:
+                    d_p = d_p.add(momentum, buf)
+                else:
+                    d_p = buf
 
-            # State initialization
-            if len(state) == 0:
-                state['step'] = 0
-                state['square_avg'] = torch.zeros_like(p.data)
-                if group['momentum'] > 0:
-                    state['momentum_buffer'] = torch.zeros_like(p.data)
-                if group['centered']:
-                    state['grad_avg'] = torch.zeros_like(p.data)
-
-            square_avg = state['square_avg']
-            alpha = group['alpha']
-
-            state['step'] += 1
-
-            if group['weight_decay'] != 0:
-                grad = grad.add(group['weight_decay'], p.data)
-
-            square_avg.mul_(alpha).addcmul_(1 - alpha, grad, grad)
-
-            if group['centered']:
-                grad_avg = state['grad_avg']
-                grad_avg.mul_(alpha).add_(1 - alpha, grad)
-                avg = square_avg.addcmul(-1, grad_avg, grad_avg).sqrt_().add_(group['eps'])
-            else:
-                avg = square_avg.sqrt().add_(group['eps'])
-
-            if group['momentum'] > 0:
-                buf = state['momentum_buffer']
-                buf.mul_(group['momentum']).addcdiv_(grad, avg)
-                p.data.add_(-group['lr'], buf)
-            else:
-                p.data.addcdiv_(-group['lr'], grad, avg)
+            p.data.add_(-group['lr'], d_p)
 
             # Update rotation
             p.data.add_(-group['lr'], add_grads[p_i])

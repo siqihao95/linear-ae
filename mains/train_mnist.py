@@ -21,13 +21,18 @@ urllib.request.install_opener(opener)
 default_hparams = dict(
     hdim=20,
     model_name="rotation",
-    optimizer="RMSprop_subspace_only",
-    # optimizer="RMSprop_full",
+    # optimizer="RMSprop_subspace_only",
+    # optimizer="RMSprop_rotation_only",
+    optimizer="RMSprop_full",
+    rmsprop_alpha=0.99,
     # optimizer="SGD",
-    lr=1e-2,
-    rotation_momentum=0.9,
+    subspace_eps=1e-8,
+    rotation_eps=1e-8,
     train_itr=30000,
-    seed=1234)
+    seed=1234,
+    batch_size=1000,
+    tie_weights=True
+)
 
 wandb.init(project='linear-ae-NNTD', config=default_hparams)
 
@@ -52,8 +57,10 @@ mnist_data = torchvision.datasets.MNIST(
     transform=torchvision.transforms.Compose(
         [torchvision.transforms.ToTensor()]))
 # full batch
-# batch_size = 1000
-batch_size = len(mnist_data)
+if config.batch_size is None or config.batch_size == -1:
+    batch_size = len(mnist_data)
+else:
+    batch_size = config.batch_size
 
 mnist_loader = torch.utils.data.DataLoader(mnist_data,
                                            batch_size=batch_size,
@@ -88,11 +95,10 @@ model_config = create_model_from_config(config,
 # define metrics
 metric_config, eval_metrics_list = create_metric_config(data, data_loader)
 
-train_stats_hdim, _ = train_models(data_loader,
-                                   train_itr,
-                                   metric_config,
-                                   model_configs=[model_config],
-                                   eval_metrics_list=eval_metrics_list,
-                                   ckpt_dir=ckpt_dir)
+train_stats_hdim, _ = train_models(
+    data_loader, train_itr, metric_config,
+    model_configs=[model_config], eval_metrics_list=eval_metrics_list,
+    ckpt_dir=ckpt_dir, tie_weights=config.tie_weights
+)
 
 train_stats_hdim.close()
