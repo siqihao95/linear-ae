@@ -178,12 +178,12 @@ def update_config(optimal_lrs):
     else:
         model_type = wandb.config.model_name
         nd_expectation = None
-    # lr = optimal_lrs[wandb.config.model_name][wandb.config.optimizer][
-    #     wandb.config.hdim]
+    lr = optimal_lrs[wandb.config.model_name][wandb.config.optimizer][
+        wandb.config.hdim]
 
     wandb.config.update({
         'model_type': model_type,
         'nd_expectation': nd_expectation,
-        # 'lr': lr
+        'lr': lr
     })
     return wandb.config

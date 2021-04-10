@@ -1,34 +1,67 @@
 from models.model_config import ModelTypes
 
-
 optimal_lrs = {
     "nd_exp": {
-        "SGD": {20: 0.03},
-        "Adam": {20: 0.01}
+        "SGD": {
+            20: 0.03
+        },
+        "Adam": {
+            20: 0.01
+        }
     },
     "nd": {
-        "SGD": {20: 0.03},
-        "Adam": {20: 0.01}
+        "SGD": {
+            20: 0.03
+        },
+        "Adam": {
+            20: 0.01
+        }
     },
     ModelTypes.NON_UNIFORM_SUM: {
-        "SGD": {20: 0.0003},
-        "Adam": {20: 0.01}
+        "SGD": {
+            20: 0.0003
+        },
+        "Adam": {
+            20: 0.01
+        }
     },
     ModelTypes.ROTATION: {
-        "SGD": {20: 0.003},
-        "Adam": {20: 0.001},
-        "RMSprop": {20: 0.001},
-        "RMSprop_naive": {20: 0.001},
-        "RMSprop_subspace_only": {20: 0.0001},
-        "RMSprop_rotation_only": {20: 0.0001},
-        "RMSprop_full": {20: 0.0001}
+        "SGD": {
+            20: 0.003
+        },
+        "Adam": {
+            20: 0.001
+        },
+        "RMSprop": {
+            20: 0.001
+        },
+        "RMSprop_naive": {
+            20: 0.001
+        },
+        "RMSprop_subspace_only": {
+            20: 0.002
+        },
+        "RMSprop_rotation_only": {
+            20: 0.0001
+        },
+        "RMSprop_full": {
+            20: 0.0002
+        }
     },
     ModelTypes.UNIFORM_SUM: {
-        "SGD": {20: 0.001},
-        "Adam": {20: 0.001}
+        "SGD": {
+            20: 0.001
+        },
+        "Adam": {
+            20: 0.001
+        }
     },
     ModelTypes.VAE: {
-        "SGD": {20: 0.001},
-        "Adam": {20: 0.001}
+        "SGD": {
+            20: 0.001
+        },
+        "Adam": {
+            20: 0.001
+        }
     }
 }
