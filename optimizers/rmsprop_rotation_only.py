@@ -145,12 +145,11 @@ class RMSpropRotation(Optimizer):
         # rotation_grad = rotation_grad_buf
 
         # ==== project to tangent space ====
-        # ---- Stiefel manifold projection to tangent space ----
-        # sym_z_wt = rotation_grad @ torch.pinverse(params[0]).detach()
-        sym_z_wt = rotation_grad @ params[0].T.detach()
-        sym_z_wt = 0.5 * (sym_z_wt + sym_z_wt.T)
-        sym_w2_z = sym_z_wt
-        add_grads = [- rotation_grad + sym_z_wt @ params[0].detach(), - rotation_grad.T + params[1].detach() @ sym_w2_z]
+        # ---- Stiefel manifold projection to tangent space (transpose instead of pinverse) ----
+        z_wt = rotation_grad @ params[0].T.detach()
+        skew_z_wt = 0.5 * (z_wt - z_wt.T)
+        add_grads = [- skew_z_wt @ params[0].detach(),
+                     - params[1].detach() @ skew_z_wt.T]
         # -------------------------
         # =========================
 
