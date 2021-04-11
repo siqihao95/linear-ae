@@ -22,7 +22,7 @@ from configs.synth import optimal_lrs
 
 default_hparams = dict(
     hdim=None,
-    model_name=None,
+    # model_name=None,
     # optimizer="RMSprop_subspace_only",
     # optimizer="RMSprop_rotation_only",
     model_name="rotation",
