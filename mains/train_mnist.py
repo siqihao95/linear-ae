@@ -35,30 +35,13 @@ urllib.request.install_opener(opener)
 #     tie_weights=True,
 #     lr=0.003)
 
-default_hparams = dict(
-    hdim=20,
-    model_name="rotation",
-    # optimizer="RMSprop_subspace_only",
-    # optimizer="RMSprop_rotation_only",
-    optimizer="RMSprop_full",
-    rmsprop_alpha=0.9,
-    # rmsprop_momentum=0.99,
-    # optimizer="SGD",
-    subspace_eps=1e-8,
-    rotation_eps=1e-8,
-    train_itr=30000,
-    seed=1234,
-    batch_size=-1,
-    tie_weights=True,
-    lr=0.0002)
-
 # default_hparams = dict(
 #     hdim=20,
 #     model_name="rotation",
 #     # optimizer="RMSprop_subspace_only",
-#     optimizer="RMSprop_rotation_only",
-#     # optimizer="RMSprop_full",
-#     rmsprop_alpha=0.01,
+#     # optimizer="RMSprop_rotation_only",
+#     optimizer="RMSprop_full",
+#     rmsprop_alpha=0.9,
 #     # rmsprop_momentum=0.99,
 #     # optimizer="SGD",
 #     subspace_eps=1e-8,
@@ -68,6 +51,23 @@ default_hparams = dict(
 #     batch_size=-1,
 #     tie_weights=True,
 #     lr=0.0002)
+
+default_hparams = dict(
+    hdim=20,
+    model_name="rotation",
+    # optimizer="RMSprop_subspace_only",
+    optimizer="RMSprop_rotation_only",
+    # optimizer="RMSprop_full",
+    rmsprop_alpha=0.01,
+    # rmsprop_momentum=0.99,
+    # optimizer="SGD",
+    subspace_eps=1e-8,
+    rotation_eps=1e-8,
+    train_itr=30000,
+    seed=1234,
+    batch_size=-1,
+    tie_weights=True,
+    lr=0.0002)
 
 # default_hparams = dict(
 #     hdim=20,
