@@ -1,6 +1,6 @@
 name: synth-sweep
 program: mains/train_synth.py
-project: linear-ae-NNTDs
+project: lae-rms-naive
 method: grid
 parameters:
   optimizer:

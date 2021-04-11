@@ -35,7 +35,7 @@ default_hparams = dict(
     seed=1234,
     batch_size=-1,
     tie_weights=True)
-wandb.init(project='lae-rms-0408', config=default_hparams)
+wandb.init(project='lae-rms-naive', config=default_hparams)
 
 config = update_config(optimal_lrs)
 
