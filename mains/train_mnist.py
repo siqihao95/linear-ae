@@ -23,17 +23,19 @@ default_hparams = dict(
     model_name="rotation",
     # optimizer="RMSprop_subspace_only",
     # optimizer="RMSprop_rotation_only",
-    optimizer="RMSprop_full",
-    rmsprop_alpha=0.99,
-    # optimizer="SGD",
+    # optimizer="RMSprop_full",
+    # rmsprop_alpha=0.99,
+    # rmsprop_momentum=0.99,
+    optimizer="SGD",
     subspace_eps=1e-8,
     rotation_eps=1e-8,
     train_itr=30000,
     seed=1234,
     batch_size=-1,
-    tie_weights=True)
+    tie_weights=True,
+    lr=0.003)
 
-wandb.init(project='lae-rms-0408', config=default_hparams)
+wandb.init(project='lae-rms-mnist', config=default_hparams)
 
 config = update_config(optimal_lrs)
 # config = wandb.config
