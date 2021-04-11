@@ -1,14 +1,14 @@
 name: synth-sweep
 program: mains/train_synth.py
-project: lae-rms-naive
+project: lae-rms-synth
 method: grid
 parameters:
   optimizer:
     distribution: categorical
     values:
+      - RMSprop_subspace_only
       - RMSprop_full
       - SGD
-      - RMSprop_subspace_only
   lr:
     distribution: categorical
     values:
