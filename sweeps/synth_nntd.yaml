@@ -1,0 +1,24 @@
+name: synth-sweep
+program: mains/train_synth.py
+project: linear-ae-NNTDs
+method: grid
+parameters:
+  optimizer:
+    distribution: categorical
+    values:
+      - RMSprop_full
+      - SGD
+      - rmsprop_subspace
+  lr:
+    distribution: categorical
+    values:
+      - 0.002
+      - 0.006
+      - 0.0002
+      - 0.0006
+  hdim:
+    distribution: categorical
+    values:
+      - 20
+      - 200
+      - 500

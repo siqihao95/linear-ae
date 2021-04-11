@@ -30,10 +30,10 @@ default_hparams = dict(
     rotation_eps=1e-8,
     train_itr=30000,
     seed=1234,
-    batch_size=1000,
+    batch_size=-1,
     tie_weights=True)
 
-wandb.init(project='linear-ae-NNTD', config=default_hparams)
+wandb.init(project='lae-rms-0408', config=default_hparams)
 
 config = update_config(optimal_lrs)
 # config = wandb.config
