@@ -109,7 +109,7 @@ class RMSpropRotation(Optimizer):
         rotation_grad = self.gamma @ params[0].detach()  # A W1
 
         row_space_adapt = True
-        amsgrad = False
+        max_stats = True
         if row_space_adapt:
             diag_rotation_square_avg_r = self.rotation_state['diag_square_avg_r']
 
@@ -119,7 +119,7 @@ class RMSpropRotation(Optimizer):
             # EMA on diag covariance
             diag_rotation_square_avg_r.mul_(self.rotation_alpha).add_(1 - self.rotation_alpha, torch.diag(rotation_sq))
 
-            if amsgrad:  # add max to ensure convergence
+            if max_stats:  # add max to ensure convergence
                 diag_rotation_square_avg_r_copy = diag_rotation_square_avg_r.clone()
                 max_diag_r = torch.max(diag_rotation_square_avg_r, diag_rotation_square_avg_r_copy)
                 rotation_grad = torch.diag(torch.pow(max_diag_r, - 0.5)) @ rotation_grad
